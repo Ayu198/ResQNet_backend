@@ -23,11 +23,12 @@ public class User {
     private String email;
 
     @Column(name = "phone_number", nullable = false, length = 15 , unique = true)
-    private String phone_Number;
+    private String phoneNumber;
 
     @Column(name = "password_hash" , nullable = false)
     private String passwordHash;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "userType" , nullable = false , length = 20)
     private UserType userType;
 
