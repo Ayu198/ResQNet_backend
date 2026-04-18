@@ -63,4 +63,15 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<ApiErrorResponse> handleDuplicateResourceException(DuplicateResourceException ex) {
+        ApiErrorResponse errorResponse = ApiErrorResponse.builder()
+                .status(HttpStatus.CONFLICT.value())
+                .error((HttpStatus.CONFLICT.getReasonPhrase()))
+                .message(ex.getMessage())
+                .timestamp(LocalDateTime.now())
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+    }
 }

@@ -1,10 +1,11 @@
 package com.resqnet.backend.service;
 
+import com.resqnet.backend.ResQNet_Enum.ApprovalStatus;
 import com.resqnet.backend.ResQNet_Enum.UserType;
-import com.resqnet.backend.dto.LoginRequest;
-import com.resqnet.backend.dto.LoginResponse;
+import com.resqnet.backend.dto.*;
 import com.resqnet.backend.entity.User;
 import com.resqnet.backend.entity.VolunteerProfile;
+import com.resqnet.backend.exception.DuplicateResourceException;
 import com.resqnet.backend.exception.InvalidCredentialsException;
 import com.resqnet.backend.exception.ResourceNotFoundException;
 import com.resqnet.backend.repository.UserRepository;
@@ -27,6 +28,7 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    //login Service
     public LoginResponse login(LoginRequest loginRequest) {
         User user = userRepository.findByPhoneNumber(loginRequest.getPhoneNumber())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -52,5 +54,102 @@ public class AuthService {
         }
 
         return loginResponseBuilder.build();
+    }
+
+    //User Signup Service
+    public SignupUserResponse signupUser(SignupUserRequest signupUserRequest) {
+        if(userRepository.existsByPhoneNumber(signupUserRequest.getPhoneNumber())) {
+            throw new DuplicateResourceException("Phone number already exists");
+        }
+        if(userRepository.existsByEmail(signupUserRequest.getEmail())) {
+            throw new DuplicateResourceException("Email already exists");
+        }
+        User user = new User();
+        user.setFullName(signupUserRequest.getFullName());
+        user.setEmail(signupUserRequest.getEmail());
+        user.setPhoneNumber(signupUserRequest.getPhoneNumber());
+        user.setPasswordHash(passwordEncoder.encode(signupUserRequest.getPassword()));
+        user.setUserType(UserType.NORMAL_USER);
+        user.setIsPhoneVerified(false);
+        user.setIsActive(true);
+
+        User saveduser = userRepository.save(user);
+
+        SignupUserResponse response = SignupUserResponse.builder()
+                .userId(saveduser.getId())
+                .email(saveduser.getEmail())
+                .fullName(saveduser.getFullName())
+                .usertype(saveduser.getUserType())
+                .phoneNumber(saveduser.getPhoneNumber())
+                .message("User SignUp Successful")
+                .build();
+        return response;
+    }
+
+    //VolunteerSignup Service
+    public SignupVolunteerResponse signupVolunteer(SignupVolunteerRequest signupVolunteerRequest) {
+        if(userRepository.existsByPhoneNumber(signupVolunteerRequest.getPhoneNumber())) {
+            throw new DuplicateResourceException("Phone number already exists");
+        }
+        if(userRepository.existsByEmail(signupVolunteerRequest.getEmail())) {
+            throw new DuplicateResourceException("Email already exists");
+        }
+        User user = new User();
+        user.setFullName(signupVolunteerRequest.getFullName());
+        user.setEmail(signupVolunteerRequest.getEmail());
+        user.setPhoneNumber(signupVolunteerRequest.getPhoneNumber());
+        user.setPasswordHash(passwordEncoder.encode(signupVolunteerRequest.getPassword()));
+        user.setUserType(UserType.VOLUNTEER);
+        user.setIsPhoneVerified(false);
+        user.setIsActive(true);
+
+        User savedUser = userRepository.save(user);
+
+        VolunteerProfile volunteerProfile = new VolunteerProfile();
+        volunteerProfile.setUser(savedUser);
+        volunteerProfile.setVolunteerType(signupVolunteerRequest.getVolunteerType());
+        volunteerProfile.setApprovalStatus(ApprovalStatus.PENDING);
+        volunteerProfile.setBackgroundCategory(signupVolunteerRequest.getBackgroundCategory());
+        volunteerProfile.setOrganization(signupVolunteerRequest.getOrganisation());
+        volunteerProfile.setExperienceLevel(signupVolunteerRequest.getExperienceLevel());
+        volunteerProfile.setExperienceSummary(signupVolunteerRequest.getExperienceSummary());
+        volunteerProfile.setSafetyAgreed(signupVolunteerRequest.getSafetyAgreed());
+
+        VolunteerProfile savedVolunteerProfile = volunteerProfileRepository.save(volunteerProfile);
+
+        return SignupVolunteerResponse.builder()
+                .userId(savedUser.getId())
+                .volunteerProfileId(savedVolunteerProfile.getId())
+                .fullName(savedUser.getFullName())
+                .phoneNumber(savedUser.getPhoneNumber())
+                .email(savedUser.getEmail())
+                .userType(savedUser.getUserType())
+                .volunteerType(savedVolunteerProfile.getVolunteerType())
+                .approvalStatus(savedVolunteerProfile.getApprovalStatus())
+                .message("Volunteer signup successful. Your application is under review.")
+                .build();
+    }
+
+    //Auth Me service
+    public AuthMeResponse authMe(AuthMeRequest authMeRequest) {
+        User user = userRepository.findById(authMeRequest.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        AuthMeResponse.AuthMeResponseBuilder responseBuilder = AuthMeResponse.builder()
+                .userId(user.getId())
+                .fullName(user.getFullName())
+                .phoneNumber(user.getPhoneNumber())
+                .email(user.getEmail())
+                .userType(user.getUserType())
+                .isPhoneVerified(user.getIsPhoneVerified())
+                .isActive(user.getIsActive())
+                .message("User fetched successfully");
+        if(user.getUserType() == UserType.VOLUNTEER) {
+            VolunteerProfile volunteerProfile = volunteerProfileRepository.findByUserId(user.getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Volunteer profile not found"));
+            responseBuilder
+                    .volunteerType(volunteerProfile.getVolunteerType())
+                    .approvalStatus(volunteerProfile.getApprovalStatus());
+        }
+        return responseBuilder.build();
     }
 }
