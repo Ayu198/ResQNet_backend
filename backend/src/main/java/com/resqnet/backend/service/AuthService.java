@@ -9,6 +9,7 @@ import com.resqnet.backend.exception.InvalidCredentialsException;
 import com.resqnet.backend.exception.ResourceNotFoundException;
 import com.resqnet.backend.repository.UserRepository;
 import com.resqnet.backend.repository.VolunteerProfileRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -16,18 +17,21 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final VolunteerProfileRepository volunteerProfileRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public AuthService(UserRepository userRepository,
-                       VolunteerProfileRepository volunteerProfileRepository) {
+                       VolunteerProfileRepository volunteerProfileRepository,
+                       PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.volunteerProfileRepository = volunteerProfileRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public LoginResponse login(LoginRequest loginRequest) {
         User user = userRepository.findByPhoneNumber(loginRequest.getPhoneNumber())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        if (!user.getPasswordHash().equals(loginRequest.getPassword())) {
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPasswordHash())) {
             throw new InvalidCredentialsException("Invalid phone number or password");
         }
 
