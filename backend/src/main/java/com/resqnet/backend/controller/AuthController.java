@@ -39,4 +39,16 @@ public class AuthController {
         AuthMeResponse response = authService.authMe(authMeRequest);
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ForgotPasswordResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest forgotPasswordRequest){
+        ForgotPasswordResponse response = authService.fogotPassword(forgotPasswordRequest);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ResetPasswordResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest resetPasswordRequest){
+        ResetPasswordResponse response = authService.resetPassword(resetPasswordRequest);
+        return ResponseEntity.ok(response);
+    }
 }

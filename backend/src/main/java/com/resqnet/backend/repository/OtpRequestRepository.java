@@ -9,5 +9,12 @@ import java.util.Optional;
 
 @Repository
 public interface OtpRequestRepository extends JpaRepository<OtpRequest, Long> {
-    Optional<OtpRequest> findTopByPhoneNumberAndPurposeOrderByCreatedAtDesc(String phoneNumber, OtpPurpose purpose);
+    Optional<OtpRequest> findTopByPhoneNumberAndPurposeOrderByCreatedAtDesc
+            (
+                    String phoneNumber, OtpPurpose purpose
+            );
+    Optional<OtpRequest> findTopByPhoneNumberAndPurposeAndIsVerfiedTrueOrderByCreatedAtDesc
+            (
+                    String phoneNumber, OtpPurpose purpose
+            );
 }
