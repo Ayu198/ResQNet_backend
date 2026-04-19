@@ -1,10 +1,12 @@
 package com.resqnet.backend.controller;
 
 import com.resqnet.backend.dto.*;
+import com.resqnet.backend.entity.User;
 import com.resqnet.backend.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -35,8 +37,9 @@ public class AuthController {
     }
 
     @PostMapping("/me")
-    public ResponseEntity<AuthMeResponse> authMe(@Valid @RequestBody AuthMeRequest authMeRequest){
-        AuthMeResponse response = authService.authMe(authMeRequest);
+    public ResponseEntity<AuthMeResponse> authMe(Authentication authentication){
+        User user = (User) authentication.getPrincipal();
+        AuthMeResponse response = authService.authMe(user);
         return ResponseEntity.ok(response);
     }
 

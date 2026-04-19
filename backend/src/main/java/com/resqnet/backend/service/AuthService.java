@@ -24,17 +24,20 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final OtpRequestRepository otpRequestRepository;
     private final OtpService otpService;
+    private final JwtService jwtService;
 
     public AuthService(UserRepository userRepository,
                        VolunteerProfileRepository volunteerProfileRepository,
                        PasswordEncoder passwordEncoder,
                        OtpRequestRepository otpRequestRepository,
-                       OtpService otpService) {
+                       OtpService otpService,
+                       JwtService jwtService) {
         this.userRepository = userRepository;
         this.volunteerProfileRepository = volunteerProfileRepository;
         this.passwordEncoder = passwordEncoder;
         this.otpRequestRepository = otpRequestRepository;
         this.otpService = otpService;
+        this.jwtService = jwtService;
     }
 
     //login Service
@@ -45,9 +48,11 @@ public class AuthService {
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPasswordHash())) {
             throw new InvalidCredentialsException("Invalid phone number or password");
         }
+        String token = jwtService.generateToken(user.getId() , user.getPhoneNumber());
 
         LoginResponse.LoginResponseBuilder loginResponseBuilder = LoginResponse.builder()
-                .token("dummy-token-for-now")
+                .token(token)
+                .tokenType("Bearer")
                 .userId(user.getId())
                 .fullName(user.getFullName())
                 .userType(user.getUserType())
@@ -140,9 +145,7 @@ public class AuthService {
     }
 
     //Auth Me service
-    public AuthMeResponse authMe(AuthMeRequest authMeRequest) {
-        User user = userRepository.findById(authMeRequest.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    public AuthMeResponse authMe(User user) {
         AuthMeResponse.AuthMeResponseBuilder responseBuilder = AuthMeResponse.builder()
                 .userId(user.getId())
                 .fullName(user.getFullName())
