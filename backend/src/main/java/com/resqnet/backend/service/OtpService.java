@@ -50,7 +50,7 @@ public class OtpService {
 
     public VerifyOtpResponse verifyOtp(VerfiyOtpRequest verifyOtpRequest) {
         OtpRequest otpRequest = otpRequestRepository
-                .findTopByPhoneNumberAndPurposeOrderByCreatedAtDesc(
+                .findTopByPhoneNumberAndOtpPurposeOrderByCreatedAtDesc(
                         verifyOtpRequest.getPhoneNumber(),
                         verifyOtpRequest.getPurpose()
                 )

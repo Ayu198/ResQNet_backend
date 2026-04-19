@@ -2,6 +2,7 @@ package com.resqnet.backend.dto;
 
 import com.resqnet.backend.ResQNet_Enum.OtpPurpose;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,6 +15,6 @@ public class VerfiyOtpRequest {
     @NotBlank(message = "otp is required")
     private String otpCode;
 
-    @NotBlank(message = "otp purpose is required")
+    @NotNull(message = "otp purpose is required")
     private OtpPurpose purpose;
 }

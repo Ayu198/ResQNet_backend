@@ -185,7 +185,7 @@ public class AuthService {
     public ResetPasswordResponse resetPassword(ResetPasswordRequest resetPasswordRequest) {
         User user = userRepository.findByPhoneNumber(resetPasswordRequest.getPhoneNumber())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        OtpRequest verifiedOtp = otpRequestRepository.findTopByPhoneNumberAndPurposeAndIsVerfiedTrueOrderByCreatedAtDesc(
+        OtpRequest verifiedOtp = otpRequestRepository.findTopByPhoneNumberAndOtpPurposeAndIsVerifiedTrueOrderByCreatedAtDesc(
                 resetPasswordRequest.getPhoneNumber(),
                 OtpPurpose.FORGOT_PASSWORD
         )
